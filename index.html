@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Cryptoportfolio - local</title>
+
+  <style>
+    /* #region CSS RELATED TO PORTFOLIO DISPLAY */
+
+    /* Change mouse cursor to hand when hovering over table headings*/
+    #portfolio-table th {
+      cursor: pointer;
+    }
+
+    /* Align everything in the table header except the one with id=coin-name to the right*/
+    #portfolio-table th:not(#coin-name) {
+      text-align: right;
+    }
+
+    /*Sort arrows*/
+    #portfolio-table .arrows-name {
+      display: inline-block
+    }
+
+    #portfolio-table .triangle-down {
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 8px solid #555;
+    }
+
+    #portfolio-table .triangle-up {
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 8px solid #555;
+    }
+
+    /* Align text in table cell with id=coin-name to the left */
+    #coin-name {
+      text-align: left;
+    }
+
+    /* Select all td elements except those, who are the first child of something */
+    #portfolio-table td:not(:first-child) {
+      text-align: right;
+    }
+
+    .cryptoUp {
+      color: green;
+    }
+
+    .cryptoDown {
+      color: red;
+    }
+
+    #portfolio-table thead,
+    tfoot {
+      background-color: #F0F8FF;
+      font-weight: bold;
+    }
+
+    #portfolio-table tr:nth-child(even) {
+      background-color: #F0F0F0;
+    }
+
+    #portfolio-table {
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /*Set width to 70%*/
+    @media (min-width: 700px) {
+      #portfolio-table {
+        width: 70%;
+      }
+    }
+
+    /* #endregion */
+  </style>
+</head>
+
+<body>
+  <div id="display-portfolio"></div>
+</body>
+<script>
+
+  const portfolio = {
+    "fiat": "EUR",
+    "token":
+      [
+        {
+          "cryptoTicker": "BTC",
+          "cryptoName": "Bitcoin",
+          "cryptoQty": "0.5",
+          "cryptoInvestedSum": "4000"
+        },
+        {
+          "cryptoTicker": "ADA",
+          "cryptoName": "Cardano",
+          "cryptoQty": "25000",
+          "cryptoInvestedSum": "1000"
+        },
+        {
+          "cryptoTicker": "ETH",
+          "cryptoName": "Ethereum",
+          "cryptoQty": "15",
+          "cryptoInvestedSum": "1500"
+        },
+        {
+          "cryptoTicker": "XMR",
+          "cryptoName": "Monero",
+          "cryptoQty": "50",
+          "cryptoInvestedSum": "1000"
+        }
+      ]
+  };
+
+  const fiats = [
+    { code: "AUD", name: "Australian Dollar", symbol: "$" },
+    { code: "BRL", name: "Brazilian real", symbol: "R$" },
+    { code: "CAD", name: "Canadian dollar", symbol: "$" },
+    { code: "CHF", name: "Swiss franc", symbol: "Fr." },
+    { code: "CLP", name: "Chilean peso", symbol: "$" },
+    { code: "CNY", name: "Chinese yuan", symbol: "¥" },
+    { code: "CZK", name: "Czech koruna", symbol: "Kč" },
+    { code: "DKK", name: "Danish krone", symbol: "kr" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "GBP", name: "Pound sterling", symbol: "£" },
+    { code: "HKD", name: "Hong Kong dollar", symbol: "$" },
+    { code: "HUF", name: "Hungarian forint", symbol: "Ft" },
+    { code: "IDR", name: "Indonesian rupiah", symbol: "Rp" },
+    { code: "ILS", name: "Israeli new shekel", symbol: "₪" },
+    { code: "INR", name: "Indian rupee", symbol: "₹" },
+    { code: "JPY", name: "Japanese yen", symbol: "¥" },
+    { code: "KRW", name: "South Korean won", symbol: "₩" },
+    { code: "MXN", name: "Mexican peso", symbol: "$" },
+    { code: "MYR", name: "Malaysian ringgit", symbol: "RM" },
+    { code: "NOK", name: "Norwegian krone", symbol: "kr" },
+    { code: "NZD", name: "New Zealand dollar", symbol: "$" },
+    { code: "PHP", name: "Philippine peso", symbol: "₱" },
+    { code: "PKR", name: "Pakistani rupee", symbol: "Rs" },
+    { code: "PLN", name: "Polish złoty", symbol: "zł" },
+    { code: "RUB", name: "Russian ruble", symbol: "₽" },
+    { code: "SEK", name: "Swedish krona", symbol: "kr" },
+    { code: "SGD", name: "Singapore dollar", symbol: "S$" },
+    { code: "THB", name: "Thai baht", symbol: "฿" },
+    { code: "TRY", name: "Turkish lira", symbol: "₺" },
+    { code: "TWD", name: "New Taiwan dollar", symbol: "NT$" },
+    { code: "USD", name: "United States dollar", symbol: "$" },
+    { code: "ZAR", name: "South African rand", symbol: "R" }
+  ];
+
+  //Example file for coin prices
+  const coinpricesExample = {
+    "RAW": {
+      "BTC": {
+        "EUR": {
+          "TYPE": "5",
+          "MARKET": "CCCAGG",
+          "FROMSYMBOL": "BTC",
+          "TOSYMBOL": "EUR",
+          "FLAGS": "4",
+          "PRICE": 3184.02,
+          "LASTUPDATE": 1547655767,
+          "LASTVOLUME": 1.16696,
+          "LASTVOLUMETO": 3702.939124,
+          "LASTTRADEID": "81592335",
+          "VOLUMEDAY": 8270.252337500304,
+          "VOLUMEDAYTO": 26401958.532578617,
+          "VOLUME24HOUR": 12328.738942289996,
+          "VOLUME24HOURTO": 39339435.01775897,
+          "OPENDAY": 3161.84,
+          "HIGHDAY": 3241.44,
+          "LOWDAY": 3151.88,
+          "OPEN24HOUR": 3214.08,
+          "HIGH24HOUR": 3244.83,
+          "LOW24HOUR": 3131.71,
+          "LASTMARKET": "Bitstamp",
+          "VOLUMEHOUR": 933.1616343399971,
+          "VOLUMEHOURTO": 2969466.2146968357,
+          "OPENHOUR": 3192.08,
+          "HIGHHOUR": 3197.93,
+          "LOWHOUR": 3165.8,
+          "CHANGE24HOUR": -30.059999999999945,
+          "CHANGEPCT24HOUR": -0.9352598566308226,
+          "CHANGEDAY": 22.179999999999836,
+          "CHANGEPCTDAY": 0.7014902714874831,
+          "SUPPLY": 17484762,
+          "MKTCAP": 55671831903.24,
+          "TOTALVOLUME24H": 338060.4222636706,
+          "TOTALVOLUME24HTO": 1076475629.3467011,
+          "IMAGEURL": "/media/19633/btc.png"
+        }
+      },
+      "ADA": {
+        "EUR": {
+          "TYPE": "5",
+          "MARKET": "CCCAGG",
+          "FROMSYMBOL": "ADA",
+          "TOSYMBOL": "EUR",
+          "FLAGS": "1",
+          "PRICE": 0.03892,
+          "LASTUPDATE": 1547655746,
+          "LASTVOLUME": 5228.33737356,
+          "LASTVOLUMETO": 203.50780392844945,
+          "LASTTRADEID": "1547655746.0509",
+          "VOLUMEDAY": 6049370.554766174,
+          "VOLUMEDAYTO": 234996.4620444752,
+          "VOLUME24HOUR": 6733302.912008209,
+          "VOLUME24HOURTO": 260417.510788049,
+          "OPENDAY": 0.03728,
+          "HIGHDAY": 0.03971,
+          "LOWDAY": 0.03703,
+          "OPEN24HOUR": 0.03787,
+          "HIGH24HOUR": 0.03971,
+          "LOW24HOUR": 0.0364,
+          "LASTMARKET": "Kraken",
+          "VOLUMEHOUR": 471323.7033123001,
+          "VOLUMEHOURTO": 18216.96669481839,
+          "OPENHOUR": 0.0391,
+          "HIGHHOUR": 0.0392,
+          "LOWHOUR": 0.03854,
+          "CHANGE24HOUR": 0.0010500000000000023,
+          "CHANGEPCT24HOUR": 2.7726432532347562,
+          "CHANGEDAY": 0.0016400000000000026,
+          "CHANGEPCTDAY": 4.399141630901295,
+          "SUPPLY": 25927070538,
+          "MKTCAP": 1009081585.33896,
+          "TOTALVOLUME24H": 764078456.3599665,
+          "TOTALVOLUME24HTO": 29736290.88298259,
+          "IMAGEURL": "/media/12318177/ada.png"
+        }
+      },
+      "ETH": {
+        "EUR": {
+          "TYPE": "5",
+          "MARKET": "CCCAGG",
+          "FROMSYMBOL": "ETH",
+          "TOSYMBOL": "EUR",
+          "FLAGS": "4",
+          "PRICE": 106.38,
+          "LASTUPDATE": 1547655764,
+          "LASTVOLUME": 1.70509953,
+          "LASTVOLUMETO": 180.7234991847,
+          "LASTTRADEID": "5814026",
+          "VOLUMEDAY": 100946.41283297984,
+          "VOLUMEDAYTO": 10895190.560435113,
+          "VOLUME24HOUR": 179307.06566574986,
+          "VOLUME24HOURTO": 19235210.558246292,
+          "OPENDAY": 105.95,
+          "HIGHDAY": 112.89,
+          "LOWDAY": 105,
+          "OPEN24HOUR": 111.55,
+          "HIGH24HOUR": 113.09,
+          "LOW24HOUR": 102.85,
+          "LASTMARKET": "Coinbase",
+          "VOLUMEHOUR": 8467.797600749996,
+          "VOLUMEHOURTO": 901083.4711828467,
+          "OPENHOUR": 107.36,
+          "HIGHHOUR": 107.71,
+          "LOWHOUR": 105.4,
+          "CHANGE24HOUR": -5.170000000000002,
+          "CHANGEPCT24HOUR": -4.6346929627969535,
+          "CHANGEDAY": 0.4299999999999926,
+          "CHANGEPCTDAY": 0.40585181689475464,
+          "SUPPLY": 104406002.4678,
+          "MKTCAP": 11106710542.524565,
+          "TOTALVOLUME24H": 8037132.902576501,
+          "TOTALVOLUME24HTO": 855150723.0888119,
+          "IMAGEURL": "/media/20646/eth_logo.png"
+        }
+      },
+      "XMR": {
+        "EUR": {
+          "TYPE": "5",
+          "MARKET": "CCCAGG",
+          "FROMSYMBOL": "XMR",
+          "TOSYMBOL": "EUR",
+          "FLAGS": "4",
+          "PRICE": 27.39,
+          "LASTUPDATE": 1547655733,
+          "LASTVOLUME": 5.14545123,
+          "LASTVOLUMETO": 140.8824546774,
+          "LASTTRADEID": "3910241",
+          "VOLUMEDAY": 47835.08494340988,
+          "VOLUMEDAYTO": 1315087.4736672589,
+          "VOLUME24HOUR": 67202.74247263001,
+          "VOLUME24HOURTO": 1842603.567910292,
+          "OPENDAY": 27.31,
+          "HIGHDAY": 28.1,
+          "LOWDAY": 27.11,
+          "OPEN24HOUR": 28.07,
+          "HIGH24HOUR": 28.22,
+          "LOW24HOUR": 26.71,
+          "LASTMARKET": "Coinbase",
+          "VOLUMEHOUR": 970.8207838799999,
+          "VOLUMEHOURTO": 26623.707689678005,
+          "OPENHOUR": 27.49,
+          "HIGHHOUR": 27.53,
+          "LOWHOUR": 27.29,
+          "CHANGE24HOUR": -0.6799999999999997,
+          "CHANGEPCT24HOUR": -2.4225151407196286,
+          "CHANGEDAY": 0.08000000000000185,
+          "CHANGEPCTDAY": 0.29293299157818325,
+          "SUPPLY": 60044000.2148228,
+          "MKTCAP": 1644605165.8839965,
+          "TOTALVOLUME24H": 6605826.623069917,
+          "TOTALVOLUME24HTO": 180935511.65747,
+          "IMAGEURL": "/media/19782/litecoin-logo.png"
+        }
+      }
+    },
+    "DISPLAY": {
+      "BTC": {
+        "EUR": {
+          "FROMSYMBOL": "Ƀ",
+          "TOSYMBOL": "€",
+          "MARKET": "CryptoCompare Index",
+          "PRICE": "€ 3,184.02",
+          "LASTUPDATE": "Just now",
+          "LASTVOLUME": "Ƀ 1.17",
+          "LASTVOLUMETO": "€ 3,702.94",
+          "LASTTRADEID": "81592335",
+          "VOLUMEDAY": "Ƀ 8,270.25",
+          "VOLUMEDAYTO": "€ 26,401,958.5",
+          "VOLUME24HOUR": "Ƀ 12,328.7",
+          "VOLUME24HOURTO": "€ 39,339,435.0",
+          "OPENDAY": "€ 3,161.84",
+          "HIGHDAY": "€ 3,241.44",
+          "LOWDAY": "€ 3,151.88",
+          "OPEN24HOUR": "€ 3,214.08",
+          "HIGH24HOUR": "€ 3,244.83",
+          "LOW24HOUR": "€ 3,131.71",
+          "LASTMARKET": "Bitstamp",
+          "VOLUMEHOUR": "Ƀ 933.16",
+          "VOLUMEHOURTO": "€ 2,969,466.2",
+          "OPENHOUR": "€ 3,192.08",
+          "HIGHHOUR": "€ 3,197.93",
+          "LOWHOUR": "€ 3,165.80",
+          "CHANGE24HOUR": "€ -30.06",
+          "CHANGEPCT24HOUR": "-0.94",
+          "CHANGEDAY": "€ 22.18",
+          "CHANGEPCTDAY": "0.70",
+          "SUPPLY": "Ƀ 17,484,762.0",
+          "MKTCAP": "€ 55.67 B",
+          "TOTALVOLUME24H": "Ƀ 338.06 K",
+          "TOTALVOLUME24HTO": "€ 1,076.48 M",
+          "IMAGEURL": "/media/19633/btc.png"
+        }
+      },
+      "ADA": {
+        "EUR": {
+          "FROMSYMBOL": "ADA",
+          "TOSYMBOL": "€",
+          "MARKET": "CryptoCompare Index",
+          "PRICE": "€ 0.03892",
+          "LASTUPDATE": "Just now",
+          "LASTVOLUME": "ADA 5,228.34",
+          "LASTVOLUMETO": "€ 203.51",
+          "LASTTRADEID": "1547655746.0509",
+          "VOLUMEDAY": "ADA 6,049,370.6",
+          "VOLUMEDAYTO": "€ 234,996.5",
+          "VOLUME24HOUR": "ADA 6,733,302.9",
+          "VOLUME24HOURTO": "€ 260,417.5",
+          "OPENDAY": "€ 0.03728",
+          "HIGHDAY": "€ 0.03971",
+          "LOWDAY": "€ 0.03703",
+          "OPEN24HOUR": "€ 0.03787",
+          "HIGH24HOUR": "€ 0.03971",
+          "LOW24HOUR": "€ 0.03640",
+          "LASTMARKET": "Kraken",
+          "VOLUMEHOUR": "ADA 471,323.7",
+          "VOLUMEHOURTO": "€ 18,217.0",
+          "OPENHOUR": "€ 0.03910",
+          "HIGHHOUR": "€ 0.03920",
+          "LOWHOUR": "€ 0.03854",
+          "CHANGE24HOUR": "€ 0.0011",
+          "CHANGEPCT24HOUR": "2.77",
+          "CHANGEDAY": "€ 0.0016",
+          "CHANGEPCTDAY": "4.40",
+          "SUPPLY": "ADA 25,927,070,538.0",
+          "MKTCAP": "€ 1,009.08 M",
+          "TOTALVOLUME24H": "ADA 764.08 M",
+          "TOTALVOLUME24HTO": "€ 29.74 M",
+          "IMAGEURL": "/media/12318177/ada.png"
+        }
+      },
+      "ETH": {
+        "EUR": {
+          "FROMSYMBOL": "Ξ",
+          "TOSYMBOL": "€",
+          "MARKET": "CryptoCompare Index",
+          "PRICE": "€ 106.38",
+          "LASTUPDATE": "Just now",
+          "LASTVOLUME": "Ξ 1.71",
+          "LASTVOLUMETO": "€ 180.72",
+          "LASTTRADEID": "5814026",
+          "VOLUMEDAY": "Ξ 100,946.4",
+          "VOLUMEDAYTO": "€ 10,895,190.6",
+          "VOLUME24HOUR": "Ξ 179,307.1",
+          "VOLUME24HOURTO": "€ 19,235,210.6",
+          "OPENDAY": "€ 105.95",
+          "HIGHDAY": "€ 112.89",
+          "LOWDAY": "€ 105.00",
+          "OPEN24HOUR": "€ 111.55",
+          "HIGH24HOUR": "€ 113.09",
+          "LOW24HOUR": "€ 102.85",
+          "LASTMARKET": "Coinbase",
+          "VOLUMEHOUR": "Ξ 8,467.80",
+          "VOLUMEHOURTO": "€ 901,083.5",
+          "OPENHOUR": "€ 107.36",
+          "HIGHHOUR": "€ 107.71",
+          "LOWHOUR": "€ 105.40",
+          "CHANGE24HOUR": "€ -5.17",
+          "CHANGEPCT24HOUR": "-4.63",
+          "CHANGEDAY": "€ 0.43",
+          "CHANGEPCTDAY": "0.41",
+          "SUPPLY": "Ξ 104,406,002.5",
+          "MKTCAP": "€ 11.11 B",
+          "TOTALVOLUME24H": "Ξ 8,037.13 K",
+          "TOTALVOLUME24HTO": "€ 855.15 M",
+          "IMAGEURL": "/media/20646/eth_logo.png"
+        }
+      },
+      "XMR": {
+        "EUR": {
+          "FROMSYMBOL": "Ł",
+          "TOSYMBOL": "€",
+          "MARKET": "CryptoCompare Index",
+          "PRICE": "€ 27.39",
+          "LASTUPDATE": "Just now",
+          "LASTVOLUME": "Ł 5.15",
+          "LASTVOLUMETO": "€ 140.88",
+          "LASTTRADEID": "3910241",
+          "VOLUMEDAY": "Ł 47,835.1",
+          "VOLUMEDAYTO": "€ 1,315,087.5",
+          "VOLUME24HOUR": "Ł 67,202.7",
+          "VOLUME24HOURTO": "€ 1,842,603.6",
+          "OPENDAY": "€ 27.31",
+          "HIGHDAY": "€ 28.10",
+          "LOWDAY": "€ 27.11",
+          "OPEN24HOUR": "€ 28.07",
+          "HIGH24HOUR": "€ 28.22",
+          "LOW24HOUR": "€ 26.71",
+          "LASTMARKET": "Coinbase",
+          "VOLUMEHOUR": "Ł 970.82",
+          "VOLUMEHOURTO": "€ 26,623.7",
+          "OPENHOUR": "€ 27.49",
+          "HIGHHOUR": "€ 27.53",
+          "LOWHOUR": "€ 27.29",
+          "CHANGE24HOUR": "€ -0.68",
+          "CHANGEPCT24HOUR": "-2.42",
+          "CHANGEDAY": "€ 0.080",
+          "CHANGEPCTDAY": "0.29",
+          "SUPPLY": "Ł 60,044,000.2",
+          "MKTCAP": "€ 1,644.61 M",
+          "TOTALVOLUME24H": "Ł 6,605.83 K",
+          "TOTALVOLUME24HTO": "€ 180.94 M",
+          "IMAGEURL": "/media/19782/litecoin-logo.png"
+        }
+      }
+    }
+  };
+
+  // Download current coin prices from external API. Then call the displayPortfolio function
+  function downloadCoinPrices() {
+    //Array "allTickers" is filled with all crypto tickers.
+    var allTickers = portfolio.token.map(item => item.cryptoTicker);
+    //console.log('allTicker: ' + allTickers);
+
+    //Create API request URL
+    var coinAPI = "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=" + allTickers + "&tsyms=" + portfolio.fiat;
+    //console.log('coinAPI: ' + coinAPI);
+
+    //Hide fetch and undhide 2 lines below to show portfolio with locally saved demo prices
+    // coinPrices = coinpricesExample;
+    // displayPortfolio();
+
+    ///*
+    fetch(coinAPI)
+      .then(handleErrors)
+      .then(res => {
+        //console.log(res.clone());//res.json() cannot be used twice in the callback. Thus res.clone() (see https://stackoverflow.com/q/46742251/5263954)
+        return res.json();
+      })
+      .then(prices => {
+        //console.log(prices);
+        coinPrices = prices;
+        displayPortfolio();
+        // createChartData();
+        //Once tables are fully rendered run the translate function to translate the app)
+        // let index = languages.indexOf(userLang);
+        // changeAppLanguage(index);
+      })
+      .catch(error => {
+        console.error('There was an error while downloading coin prices:', error.message);
+      });
+    //*/
+  }
+
+  //Handle errors from fetch operation
+  function handleErrors(response) {
+    //console.log(response);
+    if (!response.ok) {
+      throw Error(response.statusText);
+    }
+    return response;
+  }
+
+  // Display portfolio on page
+  function displayPortfolio() {
+    var myContainer = document.getElementById("display-portfolio");
+
+    //GET-Anfrage an cryptocompare API
+    var thisHTML = "";
+    thisHTML += "<table id='portfolio-table'>";
+    thisHTML += "<thead>";
+    thisHTML += "<tr>";
+    thisHTML += "<th id='coin-name' onclick='sortTable(0)' title='Name of Cryptocurrency/Token. Click here to sort alphabetically'>Name <div class='arrows-name'><div title='Descending'></div><div class='triangle-up' title='Ascending'></div></div></th>";
+    thisHTML += "<th id='last-price' onclick='sortTable(1)' title='Last price. Click here to sort.'>Last <div class='arrows-name'><div class='triangle-down' title='Descending'></div><div class='triangle-up' title='Ascending'></div></div></th>";
+    thisHTML += "<th id='change-perc' onclick='sortTable(2)' title='Change in percent in the last 24h. Click here to sort.'>Change <div class='arrows-name'><div class='triangle-down' title='Descending'></div><div class='triangle-up' title='Ascending'></div></div></th>";
+    thisHTML += "<th id='gain-loss-24h' onclick='sortTable(3)' title='Gain/loss in the last 24h. Click here to sort.'>G/L Today <div class='arrows-name'><div class='triangle-down' title='Descending'></div><div class='triangle-up' title='Ascending'></div></div></th>";
+    thisHTML += "<th id='gain-loss' onclick='sortTable(4)' title='Overall gain/loss. Click here to sort.'>Gain / Loss <div class='arrows-name'><div class='triangle-down' title='Descending'></div><div class='triangle-up' title='Ascending'></div></div></th>";
+    thisHTML += "</tr>";
+    thisHTML += "</thead>";
+
+    var i = 0;
+    var overallGainLoss = 0;
+    var overallGainLossToday = 0;
+    var cryptoStyle = "class='cryptoUp'";
+    var fiatSymbol = fiats.find(i => i.code === portfolio.fiat).symbol;
+
+    thisHTML += "<tbody>";
+    thisHTML += "<tr>";
+
+    for (i = 0; i < Object.keys(coinPrices['RAW']).length; i++) {
+      var cryptoTicker = portfolio.token[i].cryptoTicker;
+      var fullName = portfolio.token[i].cryptoName;
+      var cryptoQty = portfolio.token[i].cryptoQty;
+      var cryptoInvestedSum = portfolio.token[i].cryptoInvestedSum;
+      var lastPrice = coinPrices['RAW'][cryptoTicker][portfolio.fiat]['PRICE'];
+      var changePct24H = coinPrices['RAW'][cryptoTicker][portfolio.fiat]['CHANGEPCT24HOUR'];
+      var change24H = coinPrices['RAW'][cryptoTicker][portfolio.fiat]['CHANGE24HOUR'];
+      // var fiatSymbol = coinPrices['DISPLAY'][cryptoTicker][portfolio.fiat]['TOSYMBOL'];
+
+      var cryptoGainLoss = 0;
+      var cryptoGainLossToday = 0;
+      var cryptoBuyingPrice = 0;
+
+      //Some values on CryptoCompare return "null". That would break ".toFixed" below:
+      if (changePct24H != null) {
+        changePct24H = changePct24H.toFixed(1).concat(" %"); //Example: 2.36: toFixed: Only one digit after the comma (2.4). Concat: Add percentage sign (2.4%).
+      }
+
+      if (cryptoQty != 0) {
+        cryptoBuyingPrice = cryptoInvestedSum / cryptoQty;
+        cryptoGainLoss = cryptoQty * (lastPrice - cryptoBuyingPrice);
+        cryptoGainLossToday = cryptoQty * change24H;
+        overallGainLoss += cryptoGainLoss;
+        overallGainLossToday += cryptoGainLossToday;
+      }
+
+      //Code below makes sure that there are not too many digits after the comma. parseFloat is necessary, because lastPrice is apparently considered a string and toFixed only works with numbers.
+      if (lastPrice < 0.1) {
+        lastPrice = parseFloat(lastPrice).toFixed(3);
+      } else if (lastPrice < 10) {
+        lastPrice = parseFloat(lastPrice).toFixed(2);
+      } else {
+        lastPrice = parseFloat(lastPrice).toFixed(0);
+      }
+
+      thisHTML += "<td><a href='https://coinmarketcap.com/currencies/" + fullName.toLowerCase() + "' target=_blank>" + fullName + "</a></td>";
+      thisHTML += "<td>" + lastPrice + " " + fiatSymbol + "</td>";
+
+      //Change color of changePct24H and cryptoGainLossToday number according to value (-, 0, + -> red, black, green)
+      cryptoStyle = redOrGreen(change24H);
+
+      thisHTML += "<td " + cryptoStyle + ">" + changePct24H + "</td>";
+      thisHTML += "<td " + cryptoStyle + ">" + cryptoGainLossToday.toFixed(0) + " " + fiatSymbol + "</td>";
+
+      thisHTML += "<td " + redOrGreen(cryptoGainLoss) + ">" + cryptoGainLoss.toFixed(0) + " " + fiatSymbol + "</td>";
+      thisHTML += "</tr>";
+    }
+
+    thisHTML += "</tbody>";
+    thisHTML += "<tfoot>";
+    thisHTML += "<tr>";
+    thisHTML += "<td>Total</td>";
+    thisHTML += "<td></td>";
+    thisHTML += "<td></td>";
+
+    thisHTML += "<td " + redOrGreen(overallGainLossToday) + ">" + add1000Separators(overallGainLossToday.toFixed(0)) + " " + fiatSymbol + "</td>";
+
+    thisHTML += "<td " + redOrGreen(overallGainLoss) + ">" + add1000Separators(overallGainLoss.toFixed(0)) + " " + fiatSymbol + "</td>";
+    thisHTML += "</tr>";
+    thisHTML += "</tfoot>";
+    thisHTML += "</table>";
+
+    myContainer.innerHTML = thisHTML;
+  }
+
+  // Sort DISPLAY PORTFOLIO table by clicking on the table headers
+  function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0, xGreaterThanY;
+    table = document.getElementById("portfolio-table");
+    switching = true;
+    var arrowDown = document.getElementsByClassName("arrows-name")[n].firstElementChild;
+    var arrowUp = document.getElementsByClassName("arrows-name")[n].lastElementChild;
+
+    //Set the sorting direction to ascending:
+    dir = "asc";
+    /*Make a loop that will continue until
+    no switching has been done:*/
+    while (switching) {
+      //start by saying: no switching is done:
+      switching = false;
+      rows = table.rows;
+      /*Loop through all table rows (except the
+      first, which contains table headers and the
+      last - table footers):*/
+      for (i = 1; i < (rows.length - 2); i++) {
+        //start by saying there should be no switching:
+        shouldSwitch = false;
+        xGreaterThanY = false;
+        /*Get the two elements you want to compare,
+        one from current row and one from the next:
+        n=0: Compare strings
+        n>0: Compare numbers*/
+        if (n === 0) { //Compare strings
+          x = rows[i].getElementsByTagName("TD")[n].innerText.toLowerCase();
+          y = rows[i + 1].getElementsByTagName("TD")[n].innerText.toLowerCase();
+          if (x > y) xGreaterThanY = true;
+        } else { //Compare numbers
+          x = rows[i].getElementsByTagName("TD")[n].innerText.replace(/[^-0-9.]/g, '');//Regex: Remove everything except numbers, "-" and ".",e.g. "-35.6 %" --> "-35.6"
+          y = rows[i + 1].getElementsByTagName("TD")[n].innerText.replace(/[^-0-9.]/g, '');
+          if (Number(x) > Number(y)) xGreaterThanY = true;
+        }
+        /*check if the two rows should switch place,
+        based on the direction, asc or desc:*/
+        if (dir == "asc") {
+          //xGreaterThanY = true: switch rows!
+          if (xGreaterThanY) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir == "desc") {
+          //if xGreaterThanY = false AND the 2 numbers are not equal: switch rows! 2nd condition important because if numbers are equal there would be an infinite loop
+          if (!xGreaterThanY && Number(x) !== Number(y)) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        /*If a switch has been marked, make the switch
+        and mark that a switch has been done:*/
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        //Each time a switch is done, increase this count by 1:
+        switchcount++;
+      } else {
+        /*If no switching has been done AND the direction is "asc",
+        set the direction to "desc" and run the while loop again.*/
+        if (switchcount == 0 && dir == "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+    //Set the display of arrows according to "asc" or "desc"
+    showAllArrows(); //Show all arrows in the header, which might have been hidden during previous sort operation
+    if (dir == "asc") arrowDown.classList.remove("triangle-down"); //Change display to UP arrow only.
+    else if (dir == "desc") arrowUp.classList.remove("triangle-up"); //Change display to DOWN arrow only.
+  }
+
+  //Show all sort arrows
+  function showAllArrows() {
+    var allArrows = document.getElementsByClassName("arrows-name");
+    for (let i = 0; i < allArrows.length; i++) {
+      var arrowDown = document.getElementsByClassName("arrows-name")[i].firstElementChild;
+      var arrowUp = document.getElementsByClassName("arrows-name")[i].lastElementChild;
+      arrowDown.classList.add("triangle-down");
+      arrowUp.classList.add("triangle-up");
+    }
+  }
+
+  // If value fell: red, value rose: green
+  function redOrGreen(value) {
+    var cryptoStyle;
+    if (value == 0) {
+      cryptoStyle = "";
+    } else if (value < 0) {
+      cryptoStyle = "class='cryptoDown'";
+    } else {
+      cryptoStyle = "class='cryptoUp'";
+    }
+    return cryptoStyle;
+  }
+
+  //Add a dot as thousand separator
+  function add1000Separators(nStr) {
+    //Example: nStr = 1427900000.45
+    nStr += ''; //Convert input to string
+    const x = nStr.split('.');//Split string at . into arrays [ '1427900000', '45' ]
+    let x1 = x[0]; // 1427900000
+    const x2 = x.length > 1 ? ',' + x[1] : ''; //,45
+    const rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+      x1 = x1.replace(rgx, '$1' + '.' + '$2'); // 1427900.000 --> 1427.900.000 --> 1.427.900.000
+    }
+    return x1 + x2; // 1.427.900.000,45
+  }
+
+  downloadCoinPrices();
+
+</script>
+
+</html>
