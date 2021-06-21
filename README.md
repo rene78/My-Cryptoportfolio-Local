@@ -1,4 +1,4 @@
-# My Cryptoportfolio
+# My Cryptoportfolio - Local
 Website: [MyCryptoportfolio](https://rene78.github.io/My-Cryptoportfolio-Local/)
 
 A fully local web app to get an overview over your cryptoportfolio. Nobody will ever see your private portfolio information. The only external API call is to Cryptocompare to get the current crypto prices.
