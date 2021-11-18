@@ -1,7 +1,7 @@
 # My Cryptoportfolio - Local
 Website: [My Cryptoportfolio - Local](https://rene78.github.io/My-Cryptoportfolio-Local/)
 
-A fully local web app to get an overview over your cryptoportfolio. Nobody will ever see your private portfolio information. The only external API call is to CryptoCompare to get the current crypto prices.
+A fully local web app to get an overview of your cryptoportfolio. Nobody will ever see your private portfolio information. The only external API call is to CryptoCompare to get the current crypto prices.
 
 Obiously this app will not sync with multiple devices. If you want this feature check out the version with a database connection: [My Cryptoportfolio](https://github.com/rene78/My-Cryptoportfolio). There the user portfolios are saved anonymously in a MongoDB Atlas database.
 
